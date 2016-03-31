@@ -34,28 +34,27 @@ public class KohonenSelfOrganizingMap extends Network {
         return out;
     }
 
-    public void learn() {
+    public double learn() {
         if (learningRadius == 0) {
-            updateWeights(getWinner(), 1);
-        } else {
-            int winner = getWinner();
-            updateWeights(winner, 1);
-            updateOnRadiusWeights(winner % layerHeight, winner / layerHeight, learningRadius);
+            return updateWeights(getWinner(), 1);
         }
+        int winner = getWinner();
+        updateWeights(winner, 1);
+        return updateOnRadiusWeights(winner % layerHeight, winner / layerHeight, learningRadius);
     }
 
-    public void batchLearning() {
-
-    }
-
-    private void updateWeights(int index, double merge) {
+    private double updateWeights(int index, double merge) {
+        double err = 0.0;
         for (int i = 0; i < getLayer().getNeurons()[index].getWeights().length; ++i) {
+            err += getLayer().getNeurons()[index].getInput()[i] -
+                    getLayer().getNeurons()[index].getWeights()[i];
             getLayer().getNeurons()[index].getWeights()[i] +=
                     learningRate * merge * (
                     getLayer().getNeurons()[index].getInput()[i] -
                     getLayer().getNeurons()[index].getWeights()[i]
                     );
         }
+        return err;
     }
 
     public void setLearningRate(double learningRate) {
@@ -67,16 +66,17 @@ public class KohonenSelfOrganizingMap extends Network {
         this.squaredRadius = learningRadius * learningRadius;
     }
 
-    private void updateOnRadiusWeights(int x, int y, int radius) {
+    private double updateOnRadiusWeights(int x, int y, int radius) {
+        double err = 0.0;
         int n = 1;
         while (n <= radius) {
             if (x - n >= 0) {
                 int w = (0 > y - n) ? 0 : y - n;
                 int h = (y + n < layerWidth) ? y + n : layerWidth - 1;
                 for (int j = w; j <= h; ++j) {
-                    double distance = n * n + (j - y) * (j - y);
+                    double distance = Math.sqrt(n * n + (j - y) * (j - y));
                     if (distance <= radius) {
-                        updateWeights((x - n) + layerHeight * j, Math.exp(distance / 2 * squaredRadius));
+                        err += updateWeights((x - n) + layerHeight * j, Math.exp(-distance / 2 * squaredRadius));
                     }
                 }
             }
@@ -84,9 +84,9 @@ public class KohonenSelfOrganizingMap extends Network {
                 int w = (0 > y - n) ? 0 : y - n;
                 int h = (y + n < layerWidth) ? y + n : layerWidth - 1;
                 for (int j = w; j <= h; ++j) {
-                    double distance = n * n + (j - y) * (j - y);
+                    double distance = Math.sqrt(n * n + (j - y) * (j - y));
                     if (distance <= radius) {
-                        updateWeights((x + n) + layerHeight * j, Math.exp(distance / 2 * squaredRadius));
+                        err += updateWeights((x + n) + layerHeight * j, Math.exp(-distance / 2 * squaredRadius));
                     }
                 }
             }
@@ -94,9 +94,9 @@ public class KohonenSelfOrganizingMap extends Network {
                 int w = (0 > x - n + 1) ? 0 : x - n + 1;
                 int h = (x + n - 1 < layerHeight) ? x + n - 1 : layerHeight - 1;
                 for (int j = w; j <= h; ++j) {
-                    double distance = (j - x) * (j - x) + n * n;
+                    double distance = Math.sqrt((j - x) * (j - x) + n * n);
                     if (distance <= radius) {
-                        updateWeights(j + layerHeight * (y - n), Math.exp(distance / 2 * squaredRadius));
+                        err += updateWeights(j + layerHeight * (y - n), Math.exp(-distance / 2 * squaredRadius));
                     }
                 }
             }
@@ -104,13 +104,14 @@ public class KohonenSelfOrganizingMap extends Network {
                 int w = (0 > x - n + 1) ? 0 : x - n + 1;
                 int h = (x + n - 1 < layerHeight) ? x + n - 1 : layerHeight - 1;
                 for (int j = w; j <= h; ++j) {
-                    double distance = (j - x) * (j - x) + n * n;
+                    double distance = Math.sqrt((j - x) * (j - x) + n * n);
                     if (distance <= radius) {
-                        updateWeights(j + layerHeight * (y + n), Math.exp(distance / 2 * squaredRadius));
+                        err += updateWeights(j + layerHeight * (y + n), Math.exp(-distance / 2 * squaredRadius));
                     }
                 }
             }
             ++n;
         }
+        return err;
     }
 }
