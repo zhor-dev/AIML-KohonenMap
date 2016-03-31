@@ -2,7 +2,7 @@ public class KohonenSelfOrganizingMap extends Network {
 
     private double learningRate = 0.1;
     private int learningRadius = 7;
-    private int squaredRadius = 2 * 7 * 7;
+    private int squaredRadius = 7 * 7;
     private int layerWidth;
     private int layerHeight;
 
