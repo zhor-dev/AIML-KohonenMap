@@ -1,9 +1,15 @@
+
 public class Neuron {
     private double[] input;
     private double[] weights;
+    private boolean enableNormalization = false;
 
     public Neuron(double[] i) {
-        normalizeInputs(i);
+        if (enableNormalization) {
+            normalizeInputs(i);
+        } else {
+            this.input = i;
+        }
         weights = new double[input.length];
         setRandRange(0, 1);
     }
@@ -27,7 +33,11 @@ public class Neuron {
     }
 
     public void setInput(double[] input) {
-        normalizeInputs(input);
+        if (enableNormalization) {
+            normalizeInputs(input);
+        } else {
+            this.input = input;
+        }
     }
 
     public double[] getInput() {
@@ -36,6 +46,10 @@ public class Neuron {
 
     public double[] getWeights() {
         return weights;
+    }
+
+    public void setNormalization() {
+        enableNormalization = true;
     }
 
     private void normalizeInputs(double[] i) {

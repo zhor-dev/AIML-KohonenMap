@@ -1,3 +1,4 @@
+
 public class KohonenSelfOrganizingMap extends Network {
 
     private double learningRate = 0.1;
@@ -8,23 +9,28 @@ public class KohonenSelfOrganizingMap extends Network {
 
     public KohonenSelfOrganizingMap(int layerSize, double[] input) {
         super(layerSize, input);
-        this.layerHeight = this.layerWidth = (int)Math.sqrt(layerSize);
+        this.layerHeight = this.layerWidth = (int) Math.sqrt(layerSize);
         if (layerWidth * layerWidth != layerSize) {
-            throw new IllegalArgumentException("Layer size must be some number square!");
+            throw new IllegalArgumentException("Error: layerSize != ((int)sqrt(layerSize)) ^ 2");
         }
     }
 
     public KohonenSelfOrganizingMap(int layerSize, double[] input, int width, int height) {
         super(layerSize, input);
         if (width * height != layerSize) {
-            throw new IllegalArgumentException("Layer size must be some number square!");
+            throw new IllegalArgumentException("Error: width * height != layerSize");
         }
         this.layerHeight = height;
         this.layerWidth = width;
     }
 
-    @Override
-    public double[] output() {
+    public void setInput(double[] input) {
+        for (int i = 0; i < getLayer().getNeurons().length; ++i) {
+            getLayer().getNeurons()[i].setInput(input);
+        }
+    }
+
+    public double[] netOutput() {
         int outLength = getLayer().getNeurons().length;
         double[] out = new double[outLength];
         for (int i = 0; i < outLength; ++i) {
@@ -76,7 +82,7 @@ public class KohonenSelfOrganizingMap extends Network {
                 for (int j = w; j <= h; ++j) {
                     double distance = Math.sqrt(n * n + (j - y) * (j - y));
                     if (distance <= radius) {
-                        err += updateWeights((x - n) + layerHeight * j, Math.exp(-distance / 2 * squaredRadius));
+                        err += updateWeights((x - n) + layerHeight * j, Math.exp(-distance / (2 * squaredRadius)));
                     }
                 }
             }
@@ -86,7 +92,7 @@ public class KohonenSelfOrganizingMap extends Network {
                 for (int j = w; j <= h; ++j) {
                     double distance = Math.sqrt(n * n + (j - y) * (j - y));
                     if (distance <= radius) {
-                        err += updateWeights((x + n) + layerHeight * j, Math.exp(-distance / 2 * squaredRadius));
+                        err += updateWeights((x + n) + layerHeight * j, Math.exp(-distance / (2 * squaredRadius)));
                     }
                 }
             }
@@ -96,7 +102,7 @@ public class KohonenSelfOrganizingMap extends Network {
                 for (int j = w; j <= h; ++j) {
                     double distance = Math.sqrt((j - x) * (j - x) + n * n);
                     if (distance <= radius) {
-                        err += updateWeights(j + layerHeight * (y - n), Math.exp(-distance / 2 * squaredRadius));
+                        err += updateWeights(j + layerHeight * (y - n), Math.exp(-distance / (2 * squaredRadius)));
                     }
                 }
             }
@@ -106,7 +112,7 @@ public class KohonenSelfOrganizingMap extends Network {
                 for (int j = w; j <= h; ++j) {
                     double distance = Math.sqrt((j - x) * (j - x) + n * n);
                     if (distance <= radius) {
-                        err += updateWeights(j + layerHeight * (y + n), Math.exp(-distance / 2 * squaredRadius));
+                        err += updateWeights(j + layerHeight * (y + n), Math.exp(-distance / (2 * squaredRadius)));
                     }
                 }
             }
